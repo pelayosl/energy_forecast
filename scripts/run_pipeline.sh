@@ -9,9 +9,9 @@
 #
 # Environment variables:
 #   PYTHON            interpreter with the requirements installed (default: python). Under cron, use the
-#                     absolute path of the virtual environment, e.g. /home/me/proyecto_ii/.venv/bin/python
+#                     absolute path of the virtual environment, e.g. /home/me/energy_forecast/.venv/bin/python
 #   DSIA_DATASET_DIR  path of the dsia-dataset clone; if empty, the dataset is not refreshed
-#   LOG_DIR           folder for the logs (default: logs, inside proyecto_ii)
+#   LOG_DIR           folder for the logs (default: logs, inside the repository root)
 set -euo pipefail
 
 PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"

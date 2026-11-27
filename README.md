@@ -1,6 +1,9 @@
 # ENERGY FORECAST — Previsión de demanda eléctrica a 24 h
 
-Proyecto II de DSIA (base del Proyecto III). Arquitectura: [`ARCHITECTURE.md`](ARCHITECTURE.md).
+[![ci](https://github.com/pelayosl/energy_forecast/actions/workflows/ci.yml/badge.svg)](https://github.com/pelayosl/energy_forecast/actions/workflows/ci.yml)
+
+Proyecto III de DSIA (Trabajo Final), construido sobre la base del Proyecto II. Arquitectura:
+[`ARCHITECTURE.md`](ARCHITECTURE.md) · plan de desarrollo: [`DEVELOPMENT_PLAN.md`](DEVELOPMENT_PLAN.md).
 
 Recorrido del proyecto:
 
@@ -29,7 +32,8 @@ El sistema predice la **demanda eléctrica horaria de España (MW) para las pró
   datos abiertos de varios años.
 
 Un horizonte de 24 h es el del mercado diario y permite una estrategia directa con un único modelo (ver "Modelo").
-Este proyecto es la base del Trabajo Final (Proyecto III), que añadirá la API, el dashboard y el despliegue.
+El Proyecto II construyó el núcleo (datos, modelo, previsión y explicación); el Proyecto III añade la API, el
+dashboard, la monitorización y el despliegue.
 
 ## Datos
 
@@ -62,7 +66,7 @@ DATASET_PATH=../dsia-dataset/data/output/energy_weather_es_hourly.csv
 ```
 
 Así, cada `--update` de `dsia-dataset` se refleja en la siguiente ejecución de `ingest`, sin copiar ficheros.
-Alternativas: copiar el CSV a `proyecto_ii/data/` (la ruta por defecto, ignorada por git) o poner en `DATASET_PATH`
+Alternativas: copiar el CSV a `data/` (la ruta por defecto, ignorada por git) o poner en `DATASET_PATH`
 una URL `http(s)://` al CSV.
 
 Hace falta el dataset **completo**: la partición temporal entrena con 2019-2024, valida con 2025 y evalúa con 2026.
@@ -185,14 +189,14 @@ Con `forecast --no-explain` no se llama al proveedor.
 ## Instalación
 
 ```bash
-python -m venv .venv
-pip install -r requirements.txt
+python -m venv .venv                   # Python 3.12 (ver .python-version)
+pip install -r requirements-dev.txt    # dependencias + herramientas de test (solo ejecución: requirements.txt)
 cp .env.example .env   # y ajusta DATASET_PATH (ver "Cómo obtener el CSV")
 ```
 
 ## Cómo ejecutar
 
-Desde `proyecto_ii/`, en este orden (no hace falta ninguna clave: por defecto `AI_PROVIDER=mock`):
+Desde la raíz del repositorio, en este orden (no hace falta ninguna clave: por defecto `AI_PROVIDER=mock`):
 
 ```bash
 python -m energy_forecast.cli.ingest     # CSV → validación → tabla observations (idempotente)
@@ -241,12 +245,12 @@ PYTHON=.venv/bin/python DSIA_DATASET_DIR=../dsia-dataset bash scripts/run_pipeli
 Línea de crontab para ejecutarlo cada día a las 06:15 (rutas absolutas, porque cron no carga tu entorno):
 
 ```text
-15 6 * * * PYTHON=/ruta/proyecto_ii/.venv/bin/python DSIA_DATASET_DIR=/ruta/dsia-dataset bash /ruta/proyecto_ii/scripts/run_pipeline.sh
+15 6 * * * PYTHON=/ruta/energy_forecast/.venv/bin/python DSIA_DATASET_DIR=/ruta/dsia-dataset bash /ruta/energy_forecast/scripts/run_pipeline.sh
 ```
 
 En Windows, el equivalente es una tarea del Programador de tareas que ejecute
-`ruta\.venv\Scripts\python.exe -m energy_forecast.cli.pipeline --log-file logs\pipeline.log` con `proyecto_ii` como
-carpeta de inicio (o el script anterior con el `bash.exe` de Git for Windows).
+`ruta\.venv\Scripts\python.exe -m energy_forecast.cli.pipeline --log-file logs\pipeline.log` con la raíz del
+repositorio como carpeta de inicio (o el script anterior con el `bash.exe` de Git for Windows).
 
 El orquestador es deliberadamente simple: un script y una línea de cron, sin Airflow ni similares. CI y cron
 tienen papeles distintos: el CI comprueba el código en cada push; cron ejecuta la corrida de datos.
@@ -299,9 +303,10 @@ está). El del pipeline completo no usa red: sustituye Open-Meteo por un cliente
 partición temporal a la muestra (train abril-octubre de 2025, validación noviembre-diciembre, test 2026). Con solo siete
 meses de entrenamiento no comprueba qué modelo gana, sino que el pipeline funciona y produce 24 predicciones plausibles.
 
-**CI** (`.github/workflows/ci.yml`, job `test-proyecto-ii`): Python 3.12, `AI_PROVIDER=mock`, sin claves, ejecuta
-`pytest -m "not integration"` con un umbral de cobertura del 60 % (`--cov-fail-under=60`). La cobertura de
-`energy_forecast` en el Proyecto II es del 99 % (346 tests).
+**CI** ([`.github/workflows/ci.yml`](.github/workflows/ci.yml), en cada push a `main` y en cada PR): Python 3.12,
+`AI_PROVIDER=mock`, sin claves. El job `tests` ejecuta `pytest -m "not integration"` con un umbral de cobertura del
+80 % (`--cov-fail-under=80`); el job `integration` ejecuta el pipeline completo y la validación sobre la muestra
+versionada, sin red. Las llamadas reales a Open-Meteo y NVIDIA solo se prueban en local.
 
 ## Limitaciones conocidas
 
