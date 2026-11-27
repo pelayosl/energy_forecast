@@ -200,7 +200,7 @@ configuración es inválida (exit code `2`).
 ## 5. Estructura de paquetes
 
 ```text
-proyecto_ii/
+energy_forecast/       # raíz del repositorio
   energy_forecast/
     domain/            # schema, models, errors, validator, features, modeling, evaluation, predictor, summary
     services/          # ingestion, training, forecast, monitoring (P. III)

@@ -1,0 +1,5 @@
+# Development and CI: runtime dependencies + test tools.
+-r requirements.txt
+pytest>=9.2,<10
+pytest-cov>=7.1,<8
+httpx>=0.28,<1   # fastapi.testclient.TestClient
