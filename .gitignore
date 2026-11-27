@@ -19,3 +19,6 @@ __pycache__/
 .env
 .venv/
 .pytest_cache/
+
+# Cobertura local de pytest-cov
+.coverage
